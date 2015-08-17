@@ -1,29 +1,8 @@
-class InputBuilder
-  def initialize f, opts
-    @f, @opts = f, opts
-  end
-
-  def method_missing type, name, *args
-    opts = args.pop || {}
-    label = opts.delete(:label) || name.to_s.split('_').map(&:capitalize).join(' ')
-    opts[:class] = [@opts[:class], opts[:class], "form-control"].compact.join " "
-
-    "<div class='form-group'>
-       <label for='#{name}'>#{label}</label>
-       #{@f.send type, name, *args, opts}
-     </div>".squish.html_safe
-  end
-end
-
 module ApplicationHelper
   def icon name, opts={}
     capture_haml do
       haml_tag "i", class: "glyphicon glyphicon-#{name} #{opts[:class]}"
     end
-  end
-
-  def inputs builder, opts={}
-    yield InputBuilder.new builder, opts
   end
 
   def title &block
@@ -40,18 +19,15 @@ module ApplicationHelper
     end
   end
 
-  def page_params page, param
-    params.
+  def update_params_link title, param_updates, opts={}
+    updated = params.
       reject { |k,v| %w(action controller).include? k }.
-      tap    { |ps| ps[param] = page }
+      merge param_updates
+    link_to title, opts.merge(params: updated)
   end
 
-  def sortable column, title: nil, prefix: ""
-    column  = column.to_s
-    title ||= column.titleize
-    css_class = column == sort_column(prefix) ? "current #{sort_direction(prefix)}" : nil
-    direction = column == sort_column(prefix) && sort_direction(prefix) == :asc ? :desc : :asc
-    link_to title, {"#{prefix}sort" => column, "#{prefix}direction" => direction}, {:class => css_class}
+  def sortable_header table, *args
+    update_params_link *table.sorter_for(*args)
   end
 
   def short_order o

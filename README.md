@@ -1,6 +1,6 @@
-[![Code Climate](https://codeclimate.com/github/atlrug-rhok/medlink.png)](https://codeclimate.com/github/atlrug-rhok/medlink)
-[![Build Status](https://travis-ci.org/atlrug-rhok/medlink.png?branch=master)](https://travis-ci.org/atlrug-rhok/medlink)
-[![Coverage Status](https://coveralls.io/repos/atlrug-rhok/medlink/badge.png?branch=master)](https://coveralls.io/r/atlrug-rhok/medlink?branch=master)
+[![Code Climate](https://codeclimate.com/github/PeaceCorps/medlink.png)](https://codeclimate.com/github/PeaceCorps/medlink)
+[![Build Status](https://travis-ci.org/PeaceCorps/medlink.png?branch=master)](https://travis-ci.org/PeaceCorps/medlink)
+[![Coverage Status](https://coveralls.io/repos/PeaceCorps/medlink/badge.png?branch=master)](https://coveralls.io/r/PeaceCorps/medlink?branch=master)
 
 ## PC Medlink - Peace Corps Medical Supplies
 
@@ -13,12 +13,13 @@ This project grew out of a [National Day of Civic Hacking](http://hackforchange.
 
 ### Developing locally
 
-If you have any questions at all, feel free to email [James](https://github.com/jamesdabbs) or post on the [Google Group](https://groups.google.com/forum/?fromgroups#!forum/atlrug-rhok).
+
+If you have never run a Rails project on your machine, you might want to consult [something like this](https://gorails.com/setup/osx/10.10-yosemite) to help get Ruby, Bundler, and the like all setup. If you have any questions at all, feel free to email [James](https://github.com/jamesdabbs) or post on the [Google Group](https://groups.google.com/forum/?fromgroups#!forum/atlrug-rhok).
 
 To get started with a local copy of the project, run
 
 ```bash
-$ git clone git@github.com:atlrug-rhok/medlink.git
+$ git clone git@github.com:PeaceCorps/medlink.git
 $ bundle --without production
 $ rake db:setup
 ```
@@ -35,10 +36,10 @@ and you should be off to the races. You can check your setup by running the spec
 $ rake spec
 ```
 
-If it's green, you should be good to go.
+If it's green, you should be good to go. You can also generate a coverage report by running `rake coverage`.
 
 Then create a pull request and we will review it and merge it into the repo.
-We also use [Travis](https://travis-ci.org/atlrug-rhok/medlink) for Continuous
+We also use [Travis](https://travis-ci.org/PeaceCorps/medlink) for Continuous
 Integration.
 
 

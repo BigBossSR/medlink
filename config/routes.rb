@@ -1,9 +1,11 @@
 require 'sidekiq/web'
 Medlink::Application.routes.draw do
-  devise_for :users, controllers: { passwords: "passwords" }, skip: [:registrations]
+  devise_for :users, controllers: { confirmations: "confirmations" }, skip: [:registrations]
   as :user do
-    get 'users/edit' => 'devise/registrations#edit', as: 'edit_user_registration'
-    patch 'users/:id' => 'devise/registrations#update', as: 'user_registration'
+    get   'users/edit' => 'devise/registrations#edit',   as: 'edit_user_registration'
+    patch 'users/:id'  => 'devise/registrations#update', as: 'user_registration'
+    patch 'confirm'    => 'confirmations#confirm'
+    post  'users/sign_in/help' => 'users#send_login_help', as: 'send_login_help'
   end
 
   resources :country_supplies, only: [:index, :create]
@@ -15,9 +17,12 @@ Medlink::Application.routes.draw do
 
   resources :users, only: [] do
     resources :responses, only: [:new, :create, :show] do
-      %i(archive unarchive).each { |n| post n }
+      post :archive
+      post :unarchive
     end
   end
+
+  resources :messages, only: [:new, :create]
 
   resources :requests, only: [:new, :create]
 
@@ -40,8 +45,6 @@ Medlink::Application.routes.draw do
         post :set_country
       end
     end
-
-    resources :messages, only: [:index, :create]
   end
 
   get '/help' => 'pages#help'

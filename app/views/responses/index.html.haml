@@ -1,10 +1,7 @@
 = content_for :page_title do
   Response Tracker
 
-- if current_user.admin?
-  = render partial: "partials/admin_country_select", locals: { countries: Country.with_orders }
-
-- if active_country?
+- if current_user.country_id
   #response-tracker
     .btn-group
       - %w(unarchived all archived).each do |t|
@@ -12,9 +9,9 @@
         = link_to t.capitalize, {responses: t, page: params[:page]}, class: "btn #{status}"
 
     - if @responses.any?
-      = render partial: "partials/pager", locals: { anchor: "response-tracker", pager: @responses }
+      = render partial: "partials/pager", locals: { table: @responses }
       %table.table.table-striped.table-hover
-        = render partial: "table", locals: { rows: @responses }
+        = render partial: "table", locals: { table: @responses }
     - else
       .well
         No responses

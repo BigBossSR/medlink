@@ -1,5 +1,5 @@
 class User < ActiveRecord::Base
-  devise :database_authenticatable, :registerable,
+  devise :database_authenticatable, :confirmable,
          :recoverable, :rememberable, :trackable, :validatable
 
   enum role: [ :pcv, :pcmo, :admin ]
@@ -20,6 +20,7 @@ class User < ActiveRecord::Base
   paginates_per 10
 
   has_many :phones, dependent: :destroy
+  has_many :messages, class_name: "SMS"
   accepts_nested_attributes_for :phones, allow_destroy: true
 
   validates_presence_of :country, :location, :first_name, :last_name, :role
@@ -36,49 +37,19 @@ class User < ActiveRecord::Base
   scope :pending,  -> { where ["waiting_since >= ?", due_cutoff] }
 
   def self.find_by_pcv_id str
-    where(['lower(pcv_id) = ?', str.downcase]).first!
+    where(['lower(pcv_id) = ?', str.downcase]).first
   end
 
   def self.find_by_phone_number number
-    Phone.lookup(number).user
-  end
-
-  def update_waiting!
-    update_attributes(
-      waiting_since:     orders.without_responses.minimum(:created_at),
-      last_requested_at: orders.maximum(:created_at)
-    )
+    Phone.lookup(number).try :user
   end
 
   def primary_phone
     @_primary_phone ||= phones.first
   end
 
-  def accessible model
-    if admin?
-      model.all
-    elsif pcmo?
-      model.where(country_id: country_id)
-    else
-      model.where(user_id: id)
-    end
-  end
-
-  def send_devise_notification(notification, *args)
-    devise_mailer.send(notification, self, *args).deliver_later
-  end
-
   def name
     "#{first_name} #{last_name}".strip
-  end
-
-  def mark_updated_orders
-    orders.without_responses.
-      group_by(&:supply_id).
-      select { |_,dups| dups.count > 1 }.
-    each do |_,os|
-      os.sort_by(&:created_at).slice(0..-2).each { |o| o.touch :duplicated_at }
-    end
   end
 
   def textable?
@@ -98,7 +69,11 @@ class User < ActiveRecord::Base
   end
 
   def available_supplies
-    country.supplies
+    @_supplies ||= if admin?
+      Supply.all
+    else
+      country.supplies
+    end
   end
 
   def sms_contact_number
@@ -107,10 +82,10 @@ class User < ActiveRecord::Base
   end
 
   def welcome_video
-    if self.pcv?
-      "yTNr0Nh7WYU"
+    if pcv?
+      Video::PCV_WELCOME
     else
-      "KkXb_5kkfwk"
+      Video::PCMO_WELCOME
     end
   end
 

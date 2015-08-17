@@ -4,13 +4,23 @@ describe "Duplicate orders" do
   it "can pass through the system", :worker do
     user = create :user
     create :phone, user: user
-    %w( A B C ).each do |name| 
-      @supply = create :supply, name: name, shortcode: name 
+    %w( A B C ).each do |name|
+      @supply = create :supply, name: name, shortcode: name
       user.country.supplies << @supply
     end
 
-    SMS.receive user.primary_phone.number, "A B - first instructions"
-    SMS.receive user.primary_phone.number, "A C - second instructions"
+    twilio = create :twilio_account
+    [
+      "A B - first instructions",
+      "A C - second instructions"
+    ].each do |msg|
+      SMSResponder.new(
+        account_sid: twilio.sid,
+        from:        user.primary_phone.number,
+        to:          twilio.number,
+        body:        msg
+      ).record_and_respond
+    end
 
     pcmo = create :pcmo, country: user.country
     login pcmo

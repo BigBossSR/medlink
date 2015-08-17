@@ -1,8 +1,8 @@
 source 'https://rubygems.org'
 
-ruby '2.2.1'
+ruby '2.2.2'
 
-gem 'rails', '4.2.1'
+gem 'rails'
 
 gem 'pg'
 gem 'jquery-rails'
@@ -11,7 +11,7 @@ gem 'twilio-ruby'
 gem 'jquery-placeholder-rails'
 
 gem 'devise'
-gem 'cancan'
+gem 'pundit'
 
 gem 'rollbar'
 gem 'sidekiq'
@@ -23,6 +23,11 @@ gem 'nested_form'
 
 gem 'quiet_assets'
 
+gem 'bullet'
+gem 'slack-notifier'
+
+gem 'bootstrap_form'
+
 group :assets do
   gem 'sass-rails'
   gem 'coffee-rails'
@@ -30,7 +35,6 @@ group :assets do
 end
 
 group :development, :test do
-  gem 'bullet'
   gem 'letter_opener'
   gem 'pry-rails'
 
@@ -51,6 +55,7 @@ group :test do
   gem 'zonebie'
 end
 
+gem 'newrelic_rpm'
 group :production do
   gem 'puma'
   gem 'rails_12factor'

@@ -3,17 +3,14 @@ class ResponsesController < ApplicationController
   before_filter :find_response, only: [:show, :archive, :unarchive]
 
   def index
-    authorize! :respond, User
-    @responses = archived(accessible_responses).
-      page params[:response_page]
+    authorize :user, :respond?
+    @responses = SortTable.new archived(accessible_responses), params: params, sort_model: User
   end
 
   def new
-    @orders = @user.orders.without_responses.
-      includes(:request, :supply)
-    @history = @user.orders.with_responses.
-      includes(:supply).
-      page(params[:page])
+    @orders = SortTable.new @user.orders.without_responses.includes(:request, :supply),
+      params: params
+    @history = SortTable.new @user.orders.with_responses.includes(:supply), params: params
   end
 
   def create
@@ -49,15 +46,14 @@ class ResponsesController < ApplicationController
 
   def initialize_response
     @user = User.find params[:user_id]
-    authorize! :respond, @user
-    @response = Response.new user: @user
+    authorize @user, :respond?
+    @response = Response.new user: @user, country: @user.country
   end
 
   def find_response
     id = params[:response_id] || params[:id]
     @response = Response.find id
     @user     = @response.user
-    authorize! :respond, @user
   end
 
   def response_params
@@ -65,9 +61,7 @@ class ResponsesController < ApplicationController
   end
 
   def accessible_responses
-    Response.where(country_id: active_country_id).
-      includes(:user).
-      order("users.#{sort_column} #{sort_direction}")
+    current_user.country.responses.includes(:user)
   end
 
   def archived responses
