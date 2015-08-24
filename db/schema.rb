@@ -11,10 +11,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150812183649) do
+ActiveRecord::Schema.define(version: 20150821141705) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "announcements", force: :cascade do |t|
+    t.integer  "country_id"
+    t.string   "message"
+    t.json     "schedule"
+    t.datetime "last_sent_at"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+  end
+
+  add_index "announcements", ["country_id"], name: "index_announcements_on_country_id", using: :btree
 
   create_table "countries", force: :cascade do |t|
     t.string  "name",              limit: 255
@@ -52,6 +63,8 @@ ActiveRecord::Schema.define(version: 20150812183649) do
     t.integer  "response_id"
     t.string   "delivery_method", limit: 255
     t.datetime "duplicated_at"
+    t.datetime "received_at"
+    t.boolean  "flagged",                     default: false, null: false
   end
 
   create_table "phones", force: :cascade do |t|
@@ -68,6 +81,7 @@ ActiveRecord::Schema.define(version: 20150812183649) do
     t.integer  "message_id"
     t.text     "text"
     t.integer  "entered_by"
+    t.integer  "reorder_of_id"
   end
 
   create_table "responses", force: :cascade do |t|
@@ -75,8 +89,13 @@ ActiveRecord::Schema.define(version: 20150812183649) do
     t.integer  "country_id"
     t.integer  "user_id"
     t.integer  "message_id"
-    t.string   "extra_text",  limit: 255
+    t.string   "extra_text",     limit: 255
     t.datetime "archived_at"
+    t.boolean  "flagged",                    default: false, null: false
+    t.datetime "received_at"
+    t.integer  "received_by"
+    t.datetime "cancelled_at"
+    t.integer  "replacement_id"
   end
 
   create_table "supplies", force: :cascade do |t|
@@ -95,8 +114,8 @@ ActiveRecord::Schema.define(version: 20150812183649) do
   end
 
   create_table "users", force: :cascade do |t|
-    t.string   "email",                  limit: 255, default: "", null: false
-    t.string   "encrypted_password",     limit: 255, default: "", null: false
+    t.string   "email",                  limit: 255, default: "",   null: false
+    t.string   "encrypted_password",     limit: 255, default: "",   null: false
     t.string   "reset_password_token",   limit: 255
     t.datetime "reset_password_sent_at"
     t.datetime "remember_created_at"
@@ -120,12 +139,14 @@ ActiveRecord::Schema.define(version: 20150812183649) do
     t.string   "confirmation_token"
     t.datetime "confirmed_at"
     t.datetime "confirmation_sent_at"
+    t.boolean  "active",                             default: true
   end
 
   add_index "users", ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true, using: :btree
   add_index "users", ["email"], name: "index_users_on_email", unique: true, using: :btree
   add_index "users", ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
 
+  add_foreign_key "announcements", "countries"
   add_foreign_key "country_supplies", "countries"
   add_foreign_key "country_supplies", "supplies"
   add_foreign_key "messages", "twilio_accounts"
@@ -135,8 +156,11 @@ ActiveRecord::Schema.define(version: 20150812183649) do
   add_foreign_key "phones", "users"
   add_foreign_key "requests", "countries"
   add_foreign_key "requests", "messages"
+  add_foreign_key "requests", "responses", column: "reorder_of_id"
   add_foreign_key "requests", "users"
   add_foreign_key "responses", "countries"
   add_foreign_key "responses", "messages"
+  add_foreign_key "responses", "requests", column: "replacement_id"
   add_foreign_key "responses", "users"
+  add_foreign_key "responses", "users", column: "received_by"
 end

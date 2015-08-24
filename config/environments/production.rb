@@ -72,10 +72,7 @@ Medlink::Application.configure do
   config.active_job.queue_adapter = :sidekiq
 
   config.after_initialize do
-    Bullet.enable = true
-    Bullet.slack  = {
-      webhook_url: ENV["BULLET_SLACK_WEBHOOK"],
-      username:    "Medlink"
-    }
-  end if ENV["BULLET_SLACK_WEBHOOK"]
+    Bullet.enable  = true
+    Bullet.rollbar = true
+  end
 end

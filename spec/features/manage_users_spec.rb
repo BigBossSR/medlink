@@ -36,7 +36,7 @@ describe "User management" do
 
     it "redisplays errors" do
       click_on "Add User"
-      expect( page.find(".alert").text ).to match /email can't be blank/i
+      expect( page ).to have_content "can't be blank"
       expect( User.pcv.count ).to be_zero
     end
   end
@@ -70,8 +70,40 @@ describe "User management" do
       fill_in :user_first_name, with: ""
       click_on "Save"
 
-      expect( page ).to have_content "First name can't be blank"
+      expect( page ).to have_content "can't be blank"
       expect( User.last.first_name ).to eq @user.first_name
+    end
+  end
+
+  describe "inactivating users" do
+    before :each do
+      @user = create :user
+      visit root_path
+      within ".admin_country_select" do
+        select @user.country.name
+        click_on "Update"
+      end
+    end
+
+    it "has users active by default" do
+      select @user.name, from: :edit_user_id
+      click_on "Edit User"
+
+      expect( @user.active ).to be true
+    end
+
+    it "confirms before marking as inactive" do
+      select @user.name, from: :edit_user_id
+      click_on "Edit User"
+      delete_link = find_link 'Delete User'
+      
+      expect(delete_link['data-confirm']).to eq "You are about to inactivate this user. Are you sure?"
+
+      delete_link.click
+      @user.reload
+      expect( @user.active ).to eq false
+
+      expect( :edit_user_id ).not_to have_content @user.name
     end
   end
 end

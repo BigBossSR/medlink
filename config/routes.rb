@@ -16,30 +16,54 @@ Medlink::Application.routes.draw do
   end
 
   resources :users, only: [] do
+    member do
+      get :timeline
+    end
+
     resources :responses, only: [:new, :create, :show] do
       post :archive
       post :unarchive
     end
   end
 
-  resources :messages, only: [:new, :create]
+  resources :messages, only: [:index]
+  resources :announcements do
+    member do
+      post :deliver
+    end
+  end
 
   resources :requests, only: [:new, :create]
 
   resources :orders, only: [:index] do
-    get :manage, on: :collection
+    collection do
+      get :manage
+    end
   end
 
-  resources :responses, only: [:index]
+  resources :responses, only: [:index] do
+    member do
+      post :mark_received
+      post :flag
+      post :cancel
+      post :reorder
+    end
+  end
 
   resources :reports, only: [:index] do
-    [:order_history, :users, :pcmo_response_times].each do |r|
-      get r, on: :collection
+    collection do
+      get :order_history
+      get :users
+      get :pcmo_response_times
     end
   end
 
   namespace :admin do
     resources :users, only: [:new, :create, :edit, :update] do
+      member do
+        patch :inactivate
+      end
+
       collection do
         post :upload_csv
         post :set_country

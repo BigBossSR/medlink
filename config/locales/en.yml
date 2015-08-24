@@ -11,7 +11,8 @@ en:
     response:
       sent: "Success! Your response has been sent to %{user}. This request will now appear in the response tracker awaiting further action."
       archived: "Response has been marked as archived."
-      unarchived: "Response has been unarchived."
+      cancelled: "Response has been cancelled."
+      reordered: "Response has been cancelled and reordered."
       none_selected: "No response selected."
 
     user:
@@ -20,6 +21,7 @@ en:
       no_changes: "No changes made"
       account_updated: "Your account has been updated"
       none_selected: "Please select a user to edit"
+      inactive_user: "Success! %{user}'s account has been marked as inactive"
 
     csv:
       valid: "Successfully uploaded information for %{users} users"
@@ -32,14 +34,22 @@ en:
       general: "You are not authorized to view that page"
       password_reset_invalid: "No user matches that email and PCV ID"
 
+    announcement:
+      sent: "Message sent to %{volunteer_count} volunteers"
+      created: "Announcement created"
+      updated: "Announcement updated"
+
   sms:
     unexpected_error: "Sorry! Something went wrong. An administrator has been notified."
     unrecognized_user: "Sorry! Can't find user account. Start your message with '@your-pcvid' or text from a recognized number. Contact Health Unit to add a new number to your account"
-    invalid_for_country: "Unrecognized supply short codes: %{codes} for country: %{country}."
+    invalid_for_country: "Sorry, %{codes} are not currently offered by the med unit in %{country}."
     unrecognized_shortcodes: "Unrecognized supply short codes: %{codes}. Resubmit your request in the format: Supply Short Code, Supply Short Code - Special Instructions"
     unparseable: "Oops! The format of your message was incorrect. Resubmit your request in the format: Supply Short Code, Supply Short Code - Special Instructions"
     confirmation: "Thanks! Your request for %{supplies} has been received. You can expect a response shortly after %{due_date}."
     duplicate_order: "Oops! We have already received your request for %{supplies}. A response will follow shortly after %{due_date}."
+    orders_flagged: "Your orders for %{supplies} have been flagged for follow-up from your PCMO."
+    orders_received: "Thanks! Your orders for %{supplies} have been marked as received."
+    no_outstanding_responses: "Sorry! We can't find any outstanding orders for your account."
     response:
       delivery: "Your request for %{supplies} has been approved for delivery to you."
       pickup: "Your request for %{supplies} has been approved for pickup."
