@@ -3,27 +3,24 @@ class SortTable
 
   attr_reader :prefix
 
-  def initialize scope, params:,  prefix: nil, default: nil, sort_model: nil
-    @scope   = scope
-    @params  = params.clone
-    @prefix  = prefix ? "#{prefix}_" : ""
-    @default = default || { id: :asc }
-    @model   = sort_model || @scope.model
+  def initialize scope, params:,  prefix: nil, default: nil, sort_model: nil, per_page: nil
+    @scope    = scope
+    @params   = params.clone
+    @prefix   = prefix ? "#{prefix}_" : ""
+    @default  = default || { id: :asc }
+    @model    = sort_model || @scope.model
+    @per_page = per_page
   end
 
   def ordered
-    if sort_column
-      @scope.order "#{@model.table_name}.#{sort_column} #{sort_direction}"
-    else
-      @scope
-    end
+    @scope.order "#{@model.table_name}.#{sort_column} #{sort_direction}"
   end
 
   def page_param
     "#{prefix}page"
   end
   def page
-    ordered.page(@params[page_param])
+    ordered.page(@params[page_param]).per(@per_page)
   end
 
   def each
@@ -56,7 +53,7 @@ class SortTable
     column  = column.to_s
     title ||= column.titleize
 
-    if column == sort_column
+    if column == sort_column.to_s
       css = "current #{sort_direction}"
       dir = sort_direction == :asc ? :desc : :asc
     else

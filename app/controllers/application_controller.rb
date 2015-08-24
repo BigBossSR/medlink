@@ -2,6 +2,9 @@ class ApplicationController < ActionController::Base
   protect_from_forgery
 
   before_action :authenticate_user!
+  after_action :verify_authorized, except: :index, unless: :devise_controller?
+
+  around_action :alert_if_slow
 
   include Pundit
   rescue_from Pundit::NotAuthorizedError do |exception|
@@ -11,8 +14,18 @@ class ApplicationController < ActionController::Base
     #   in the process.
     redirect_to root_path, flash: { error: I18n.t!("flash.auth.general") }
   end
+  rescue_from Pundit::AuthorizationNotPerformedError do |ex|
+    # :nocov:
+    Slackbot.new.message "#{ex.to_s} - #{controller_action_name}"
+    # :nocov:
+  end if Rails.env.production?
 
-  private # ----------
+private
+
+  def sort_table scope, opts={}
+    opts[:params] = params
+    SortTable.new scope, opts
+  end
 
   # Redirects to the login path to allow the flash messages to
   #    display for sign_out.
@@ -34,4 +47,19 @@ class ApplicationController < ActionController::Base
   ensure
     Bullet.enable = true
   end
+
+  # :nocov:
+  def alert_if_slow
+    start = Time.now
+    yield
+    duration = Time.now - start
+    if duration > 1.second
+      Slackbot.new.message "#{controller_action_name} took #{duration} (#{request.path})"
+    end
+  end
+
+  def controller_action_name
+    "#{params[:controller]}##{params[:action]}"
+  end
+  # :nocov:
 end

@@ -1,6 +1,8 @@
 require "spec_helper"
 
-describe SMSResponder do
+# Note: these tests are really about the SMSOrderPlacer, but are ported straight from
+#   before there was anything to dispatch to
+describe SMSDispatcher do
   before :each do
     @phone  = create :phone
     @user   = @phone.user
@@ -11,7 +13,7 @@ describe SMSResponder do
 
   def response_for phone, text
     t = create :twilio_account
-    r = SMSResponder.new(account_sid: t.sid, from: phone.number, to: t.number, body: text)
+    r = SMSDispatcher.new(account_sid: t.sid, from: phone.number, to: t.number, body: text)
     r.record_and_respond
 
     recorded = SMS.outgoing.last
@@ -77,6 +79,12 @@ describe SMSResponder do
     expect( Request.last.user ).to eq @user
   end
 
+  it "responds with a help message when the text is malformed" do
+    resp = response_for @phone, "jansldk ajanlskjd alskjdnfal kajndsflj"
+    expect( resp.text ).to match /unrecognized.*jansldk.*3.other.*resubmit.*format/i
+    expect( Request.count ).to eq 0
+  end
+
   it "responds with a help message when the user cannot be determined" do
     resp = response_for @phone, "@XXXX #{@supply.shortcode}"
     expect( resp.text ).to match /can't find user/i
@@ -89,6 +97,17 @@ describe SMSResponder do
   it "responds with a help message when the supplies cannot be determined" do
     resp = response_for @phone, "ZXCV, ASDF"
     expect( resp.text ).to match /unrecognized supply short codes: ZXCV and ASDF/i
+  end
+
+  it "indicates when supplies are valid but not available in-country" do
+    unavailable = 3.times.map { create :supply }
+    resp = response_for @phone, unavailable.map(&:shortcode).join(", ")
+
+    unavailable.each do |s|
+      expect( resp.text ).to include s.shortcode
+    end
+    expect( resp.text ).to match /not.*offered.*in #{@user.country.name}/i
+    expect( resp.text ).not_to include @user.country.supplies.first.shortcode
   end
 
   it "can abridge the confirmation message if it's too long" do
